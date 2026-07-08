@@ -14,7 +14,8 @@ app.use('/', require('./routes'));
 
 mongodb.initDb((err) => {
     if (err) {
-        console.log(err);
+        console.error(err);
+        process.exit(1);
     }
     else {
         app.listen(port, () => { console.log(`Database is listening and node Running on port ${port}`); });
