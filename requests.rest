@@ -1,0 +1,11 @@
+### Local: get all contacts
+GET http://localhost:3000/contacts
+
+### Local: get one contact
+GET http://localhost:3000/contacts/64ac660864282d23d377e557
+
+### Render: get all contacts
+GET https://project1-cetf.onrender.com/contacts
+
+### Render: get one contact
+GET https://project1-cetf.onrender.com/contacts/64ac660864282d23d377e557
