@@ -2,13 +2,25 @@
   "swagger": "2.0",
   "info": {
     "title": "Contacts API",
-    "description": "API for creating, reading, updating, and deleting contacts",
+    "description": "API for creating, reading, updating, and deleting contacts stored in MongoDB.",
     "version": "1.0.0"
   },
   "host": "project1-cetf.onrender.com",
   "basePath": "/",
+  "tags": [
+    {
+      "name": "Contacts",
+      "description": "Operations for the contacts collection"
+    }
+  ],
   "schemes": [
     "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
   ],
   "paths": {
     "/": {
@@ -21,18 +33,41 @@
         }
       }
     },
+    "/api-docs": {
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/contacts/": {
       "get": {
         "tags": [
           "Contacts"
         ],
-        "description": "",
+        "summary": "Get all contacts",
+        "description": "Returns every contact stored in the contacts collection.",
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Contacts retrieved successfully.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Contact"
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "The contacts could not be retrieved.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -40,13 +75,31 @@
         "tags": [
           "Contacts"
         ],
-        "description": "",
+        "summary": "Create a contact",
+        "description": "Creates a contact. All five fields are required and the new contact ID is returned.",
+        "parameters": [
+          {
+            "name": "contact",
+            "in": "body",
+            "description": "Contact to create.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ContactInput"
+            }
+          }
+        ],
         "responses": {
           "201": {
-            "description": "Created"
+            "description": "Contact created successfully.",
+            "schema": {
+              "$ref": "#/definitions/CreatedContact"
+            }
           },
           "400": {
-            "description": "Bad Request"
+            "description": "One or more required fields are missing.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           },
           "500": {
             "description": "Internal Server Error"
@@ -59,24 +112,36 @@
         "tags": [
           "Contacts"
         ],
-        "description": "",
+        "summary": "Get a contact by ID",
+        "description": "Returns the contact whose MongoDB ObjectId matches the URL parameter.",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "MongoDB ObjectId of the contact.",
+            "example": "6a4c660864282d23d377e557"
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Contact retrieved successfully.",
+            "schema": {
+              "$ref": "#/definitions/Contact"
+            }
           },
           "400": {
-            "description": "Bad Request"
+            "description": "The supplied contact ID is invalid.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           },
           "404": {
-            "description": "Not Found"
+            "description": "No contact exists with the supplied ID.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           },
           "500": {
             "description": "Internal Server Error"
@@ -87,24 +152,42 @@
         "tags": [
           "Contacts"
         ],
-        "description": "",
+        "summary": "Update a contact",
+        "description": "Replaces the five fields of an existing contact. The contact ID is not modified.",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "MongoDB ObjectId of the contact to update.",
+            "example": "6a4c660864282d23d377e557"
+          },
+          {
+            "name": "contact",
+            "in": "body",
+            "description": "Complete replacement contact. All fields are required.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ContactInput"
+            }
           }
         ],
         "responses": {
           "204": {
-            "description": "No Content"
+            "description": "Contact updated successfully."
           },
           "400": {
-            "description": "Bad Request"
+            "description": "The ID is invalid or a required field is missing.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           },
           "404": {
-            "description": "Not Found"
+            "description": "No contact exists with the supplied ID.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           },
           "500": {
             "description": "Internal Server Error"
@@ -115,22 +198,111 @@
         "tags": [
           "Contacts"
         ],
-        "description": "",
+        "summary": "Delete a contact",
+        "description": "Permanently deletes the contact whose MongoDB ObjectId matches the URL parameter.",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "MongoDB ObjectId of the contact to delete.",
+            "example": "6a4c660864282d23d377e557"
           }
         ],
         "responses": {
           "204": {
-            "description": "No Content"
+            "description": "Contact deleted successfully."
+          },
+          "400": {
+            "description": "The supplied contact ID is invalid.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "No contact exists with the supplied ID.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           },
           "500": {
             "description": "Internal Server Error"
           }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "ContactInput": {
+      "type": "object",
+      "properties": {
+        "firstName": {
+          "type": "string",
+          "example": "Carlos"
+        },
+        "lastName": {
+          "type": "string",
+          "example": "Mendoza"
+        },
+        "email": {
+          "type": "string",
+          "example": "carlos.mendoza@example.com"
+        },
+        "favoriteColor": {
+          "type": "string",
+          "example": "Blue"
+        },
+        "birthday": {
+          "type": "string",
+          "example": "1999-04-15"
+        }
+      }
+    },
+    "Contact": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string",
+          "example": "6a4c660864282d23d377e557"
+        },
+        "firstName": {
+          "type": "string",
+          "example": "Carlos"
+        },
+        "lastName": {
+          "type": "string",
+          "example": "Mendoza"
+        },
+        "email": {
+          "type": "string",
+          "example": "carlos.mendoza@example.com"
+        },
+        "favoriteColor": {
+          "type": "string",
+          "example": "Blue"
+        },
+        "birthday": {
+          "type": "string",
+          "example": "1999-04-15"
+        }
+      }
+    },
+    "CreatedContact": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "example": "6a4c660864282d23d377e557"
+        }
+      }
+    },
+    "Error": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "Error description"
         }
       }
     }
